@@ -1,0 +1,14 @@
+---
+Vegetables:
+  - Carrot:
+      Calories: 25
+        Fat: 0.1
+        Carbs: 6
+  - Tomato:
+      Calories: 22
+      Fat: 0.2
+      Carbs: 4.8
+  - Cucumber:
+        Calories: 8
+        Fat: 0.1
+        Carbs: 1.9
