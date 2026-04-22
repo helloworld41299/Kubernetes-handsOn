@@ -1,0 +1,97 @@
+1.  Why we need multiple instance?
+    -  high availability
+    -  Load balancing
+    -  Efficient, quick response
+    -  No downtime. etc.
+
+2. for Replicaset, [apiversion: apps/v1]
+   "kubernetes": "*.yaml" add the configuration 
+   in [yaml setting > settings.json] i.e.. it will use kubernetes schema for all yaml files onwards.
+
+3. Replicaset  uses replication controller
+   1. which ensure that the specified no of pods run every time. If any pod fails, it automatically create and deploy new one and assign the workloads of failed pods to it.
+   2. It also managing the traffic, user-requests and distribute among pods. Hence do loadbalancing.
+   3. It uses matchLabels to filter the label of pods to monitor and replication.
+ # spec(Selector.matchLabels == Pod.labels) does not care matching with above rs, Deployments, service etc metadata(labels).  
+
+4. Even if you create additional pod with same labels as rs  outside of rs,  it will create and terminate/delete this additional pod. bcz (Replicaset ensures only desired no. of pods run as listed under replicas).
+ 
+5. #  kubectl apply/create -f fileName/Replicaset.yaml
+      - create and deploy Replicaset.
+ 
+   #  kubectl scale  --replicas=6 -f fileName/Replicaset.yaml
+       - scale no. of Replicaset.
+ 
+# kubectl scale --replicask=6  rs  myapp-replicaset
+       - scale no. of replicas via type & name.
+# In terminal, kubectl edit rs myapp-replicaset
+
+6.  #labels: app, type, env etc.,      # spec(Selector.matchLabels == Pod.labels) does not care matching with above rs, Deployments, service etc metadata(labels).
+ 
+7.  Deployment is the highest hierarchy of Kubernetes objects, contains replicasets, which further contains multiple pods and these pods contains one or more containers, inside these containers, actual application is running.
+  -  It provides facility to upgrade, undo, pause> resume changes in rolling out fashion (one at a time).
+  -  Deployments> rs > pods > containers
+  -  Cluster> Nodes> pods > containers
+kubectl get deployments
+kubectl describe deployments
+kubectl get rs
+kubectl get pods
+kubectl describe po
+kubectl get all - to list all the objects
+
+8.  1. Services is an object, hhree types - Nodeport [On         node, externally, 30,000-32,767], ClusterIP (Virtual IP, internally), LoadBalancer (manages load/traffic across instances).
+    2.  - NodePort - a pod on node to make API accessible externally to end users.
+       - ClusterIP - Service Uses virtual IP to connects internally with diff. services (ex- set of        frontend server communicate with set of backend servers).
+       - LoadBalancer - Service balances load across multiple instance/servers works with Cloud providers.
+    3. Port is an array
+    4. NodePort (node) <> ServicePort(service) <> targetPort (Pod-container/backend)
+
+9.  1. Important to assign "port value (service port)", targetPort can take same value as svc port and NodePort can take any value from range [30,000- 32,767] If not assigned.
+    2. (Selector and labels) - targetPort on which Pod   ,, yes, simply specifying targetPort (let say 80) is not enough,  bcz.. there could be 100s of pods running your web services/ API on same targetPort 80. So, we use label and Selector to link this together.. 
+ 
+    3. Why matchLabels cannot be used in a Service?
+    - bcz Services only need direct Pod matching, not advanced selection logic as in Deployments, Replicasets etc.
+     Example (Deployment)
+             selector:
+               matchLabels:
+                 app: myapp
+                 tier: front-end
+ 
+              Example (Service)
+              spec:
+                selector:
+                  app: myapp
+                  tier: front-end
+ 
+ 
+      # kubectl create/apply -f filename/ service.yaml  -create svc  
+      # kubectl get svc - list svc  
+      # curl http://nodeIP:nodePort to access the svc (web server/ API)
+
+
+10.   How to map Service when multiple pods running web API/sever/instance?
+      - we use same technique as we used while creating service to map with single pod.
+      -we match the pod label to the selector label under service-definition.yaml
+      ex- Let say 3 pods with same labels: myapp, will define same in service-definition.yaml under Selector: myapp. when the service created, it automatically selects all 3 pods to match.
+
+ 11.  How to map Service when multiple pods running web API/sever/instance are distributed on multiple nodes in a Cluster?
+      - Same as above, we don't need to configure anything additionally, when we create a service, Kubernetes automatically creates a service that spans across all the nodes in the cluster and maps all the targetPort with same nodePort on all the nodes in the cluster and thus make API accessible with the NodeIP of any node in the cluster followed by nodePort (same in this case).    #curl http://NodeIP:nodePort
+
+12-Q?  A full‑stack app in Kubernetes often runs multiple sets of pods—frontend, backend, Redis, databases like MySQL, and more.
+       These components must talk to each other, but pods come and go, and pod IPs are never static. So how do services reliably connect?
+Ans   -The Problem:
+        Pods get dynamic IPs that change whenever they restart.
+        A frontend pod may need a backend pod — but which one?
+        Who decides where requests go? How do we avoid broken connections?
+
+      -Solution: Cluster IP
+
+          A Kubernetes Service groups identical pods and exposes one stable name + IP for them. i.e..Cluster IP
+          -  A Backend Service groups all backend pods
+          -  A Redis Service groups all Redis pods
+          -  Requests to the service are automatically load‑balanced across its pods
+          -  Pods talk to each other using service names, not pod IPs
+      # Why This Matters ?
+          - Each layer of your microservices can scale independently
+          -  Pods can be created or removed anytime with no impact on communication
+          -  The cluster stays clean, stable, and fault‑tolerant
