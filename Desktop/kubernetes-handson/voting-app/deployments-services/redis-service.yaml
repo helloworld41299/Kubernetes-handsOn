@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis     #sevice name is important, catioud as it auto sets the DNS entry
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  ports:
+    - targetPort: 6379
+      port: 6379     # generally keep same as targetPort
+      name: "redis-service"
+  selector:
+    app: redis
+    tier: database
