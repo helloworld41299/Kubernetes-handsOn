@@ -1,0 +1,7 @@
+vsCode-shortcut.txt
+--------------------------------------
+All Occurrences/multi select  : Ctrl + Shift + L  
+
+ Next Occurrence: Select a word :   Ctrl + D
+
+ Exit Multi-Cursor: Press Esc to return to a single cursor.
