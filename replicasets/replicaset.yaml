@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1    # for replicase - apps/v1
+kind: ReplicaSet
+metadata:
+  name: myapp-replicaset
+  labels:
+    app: myapp
+    type: front-end
+spec:
+  template:
+    metadata:
+      name: myapp-pod
+      labels:
+        app: myapp
+        type: front-end
+    spec:
+      containers:
+        - name: nginx-containers
+          image: nginx
+  replicas: 5
+  selector:
+    matchLabels:
+      type: front-end
+ 
+#  kubectl apply/create -f fileName/Replicaset.yaml
+#     - create and deploy Replicaset.
+ 
+#  kubectl scale  --replicas=6 -f fileName/Replicaset.yaml
+#     - scale no. of Replicaset.
+ 
+# kubectl scale --replicask=6  rs  myapp-replicaset
+#    - scale no. of replicas via type & name.
+# In terminal, kubectl edit rs myapp-replicaset
