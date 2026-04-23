@@ -102,3 +102,5 @@ Kubernetes on Azure (AKS):
     11. kubectl create/apply -f .
     12. kubectl get deployments, svc
        in svc, we can find the loadBalancer for vote and result app
+       
+       #testing change-1
